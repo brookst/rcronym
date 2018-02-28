@@ -1,0 +1,6 @@
+CREATE TABLE acronyms (
+    id SERIAL PRIMARY KEY,
+    key VARCHAR NOT NULL,
+    regex VARCHAR NOT NULL,
+    value TEXT NOT NULL
+)
