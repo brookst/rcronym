@@ -136,15 +136,26 @@ fn main() {
             }
         }
         Cli::ParseRecent => {
+            use schema::occurrences;
             let acronyms = get_acronyms(&db);
             let regset = get_regexes(&db).expect("Failed to get regexes");
             let comments = fetch_comments(&reddit);
             for comment in comments {
                 let mut matches = 0;
+                let thread_id = comment.link_id.trim_left_matches("t3_");
                 for acronym_id in regset.matches(&comment.body) {
                     matches += 1;
                     let acronym = &acronyms[acronym_id];
                     println!("Match: {}: {}", acronym.key, acronym.value);
+                    diesel::insert_into(occurrences::table)
+                        .values((
+                            occurrences::thread_id.eq(thread_id),
+                            occurrences::comment_id.eq(&comment.id),
+                            occurrences::acronym_id.eq(acronym.id),
+                        ))
+                        .on_conflict_do_nothing()
+                        .execute(&db)
+                        .expect("Error inserting occurrence to db");
                 }
                 if matches > 0 {
                     println!(
@@ -155,6 +166,21 @@ fn main() {
                         comment.author
                     );
                 }
+            }
+        }
+        Cli::ExpandThread { thread_id } => {
+            use schema::{occurrences, acronyms};
+            use models::Acronym;
+            println!("Thread: https://www.reddit.com/r/rust/comments/{}", thread_id);
+
+            let results = occurrences::table
+                .inner_join(acronyms::table)
+                .filter(occurrences::thread_id.eq(thread_id))
+                .select(acronyms::all_columns)
+                .load::<Acronym>(&db)
+                .expect("Thread query failed");
+            for acronym in results {
+                println!("  {}: {}", acronym.key, acronym.value);
             }
         }
     }
