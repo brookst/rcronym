@@ -136,15 +136,26 @@ fn main() {
             }
         }
         Cli::ParseRecent => {
+            use schema::occurances;
             let acronyms = get_acronyms(&db);
             let regset = get_regexes(&db).expect("Failed to get regexes");
             let comments = fetch_comments(&reddit);
             for comment in comments {
                 let mut matches = 0;
+                let thread_id = comment.link_id.trim_left_matches("t3_");
                 for acronym_id in regset.matches(&comment.body) {
                     matches += 1;
                     let acronym = &acronyms[acronym_id];
                     println!("Match: {}: {}", acronym.key, acronym.value);
+                    diesel::insert_into(occurances::table)
+                        .values((
+                            occurances::thread_id.eq(thread_id),
+                            occurances::comment_id.eq(&comment.id),
+                            occurances::acronym_id.eq(acronym.id),
+                        ))
+                        .on_conflict_do_nothing()
+                        .execute(&db)
+                        .expect("Error inserting occurance to db");
                 }
                 if matches > 0 {
                     println!(
@@ -155,6 +166,28 @@ fn main() {
                         comment.author
                     );
                 }
+            }
+        }
+        Cli::ExpandThread { thread_id } => {
+            use schema::{occurances, acronyms};
+            use models::{Occurance, Acronym};
+            let uses = occurances::dsl::occurances
+                .filter(occurances::thread_id.eq(&thread_id))
+                .load::<Occurance>(&db)
+                .expect("Error loading occurances");
+            println!("Thread: https://www.reddit.com/r/rust/comments/{}", thread_id);
+
+            // for result in uses {
+            //     let acronym: Acronym = acronyms::dsl::acronyms
+            //         .find(result.acronym_id)
+            //         .first(&db)
+            //         .expect("Error loading acronym");
+            use diesel::BelongingToDsl;
+            let results = Acronym::belonging_to(&uses)
+                .load::<Acronym>(&db)
+                .expect("Error loading acronyms");
+            for acronym in results {
+                println!("  {}: {}", acronym.key, acronym.value);
             }
         }
     }

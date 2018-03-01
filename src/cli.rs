@@ -19,4 +19,9 @@ pub enum Cli {
     RecentCandidates,
     #[structopt(name = "recent")]
     ParseRecent,
+    #[structopt(name = "expand")]
+    ExpandThread {
+        #[structopt(long = "id")]
+        thread_id: String,
+    },
 }
