@@ -115,6 +115,20 @@ fn main() {
                 .get_result::<Acronym>(&db)
                 .expect("Error inserting acronym");
         }
+        Cli::EditAcronym { id, key, regex, value } => {
+            use schema::acronyms;
+            use models::Acronym;
+            let acronym = acronyms::table
+                .find(id)
+                .get_result::<Acronym>(&db)
+                .expect("Acronym not found");
+            diesel::update(&acronym)
+                .set((key.and_then(|key| {Some(acronyms::key.eq(key))}),
+                    regex.and_then(|regex| {Some(acronyms::regex.eq(regex))}),
+                    value.and_then(|value| {Some(acronyms::value.eq(value))})))
+                .execute(&db)
+                .expect("Error updating acronym");
+        }
         Cli::RemoveAcronym { id } => {
             use schema::acronyms;
             diesel::delete(acronyms::dsl::acronyms.filter(acronyms::id.eq(id)))

@@ -8,6 +8,17 @@ pub enum Cli {
         #[structopt(long = "regex")]
         regex: Option<String>,
     },
+    #[structopt(name = "edit")]
+    EditAcronym {
+        #[structopt(long = "id")]
+        id: i32,
+        #[structopt(long = "key")]
+        key: Option<String>,
+        #[structopt(long = "regex")]
+        regex: Option<String>,
+        #[structopt(long = "value")]
+        value: Option<String>,
+    },
     #[structopt(name = "rm")]
     RemoveAcronym {
         #[structopt(long = "id")]
