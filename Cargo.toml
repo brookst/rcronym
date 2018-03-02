@@ -1,8 +1,12 @@
 [package]
 name = "rcronym"
 version = "0.1.0"
+description = "Reddit acronym expander bot"
 authors = ["Tim Brooks <brooks@skoorb.net>"]
 license = "AGPL-3.0"
+keywords = ["reddit", "bot", "acronym"]
+repository = "https://github.com/brookst/rcronym.git"
+readme = "README.md"
 
 [dependencies]
 orca = "0.5.0"
