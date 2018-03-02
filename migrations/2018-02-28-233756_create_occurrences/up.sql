@@ -1,4 +1,4 @@
-CREATE TABLE occurances (
+CREATE TABLE occurrences (
         thread_id VARCHAR NOT NULL,
         comment_id VARCHAR NOT NULL,
         acronym_id INTEGER NOT NULL REFERENCES acronyms (id),

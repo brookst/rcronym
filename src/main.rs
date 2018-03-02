@@ -136,7 +136,7 @@ fn main() {
             }
         }
         Cli::ParseRecent => {
-            use schema::occurances;
+            use schema::occurrences;
             let acronyms = get_acronyms(&db);
             let regset = get_regexes(&db).expect("Failed to get regexes");
             let comments = fetch_comments(&reddit);
@@ -147,15 +147,15 @@ fn main() {
                     matches += 1;
                     let acronym = &acronyms[acronym_id];
                     println!("Match: {}: {}", acronym.key, acronym.value);
-                    diesel::insert_into(occurances::table)
+                    diesel::insert_into(occurrences::table)
                         .values((
-                            occurances::thread_id.eq(thread_id),
-                            occurances::comment_id.eq(&comment.id),
-                            occurances::acronym_id.eq(acronym.id),
+                            occurrences::thread_id.eq(thread_id),
+                            occurrences::comment_id.eq(&comment.id),
+                            occurrences::acronym_id.eq(acronym.id),
                         ))
                         .on_conflict_do_nothing()
                         .execute(&db)
-                        .expect("Error inserting occurance to db");
+                        .expect("Error inserting occurrence to db");
                 }
                 if matches > 0 {
                     println!(
@@ -169,13 +169,13 @@ fn main() {
             }
         }
         Cli::ExpandThread { thread_id } => {
-            use schema::{occurances, acronyms};
+            use schema::{occurrences, acronyms};
             use models::Acronym;
             println!("Thread: https://www.reddit.com/r/rust/comments/{}", thread_id);
 
-            let results = occurances::table
+            let results = occurrences::table
                 .inner_join(acronyms::table)
-                .filter(occurances::thread_id.eq(thread_id))
+                .filter(occurrences::thread_id.eq(thread_id))
                 .select(acronyms::all_columns)
                 .load::<Acronym>(&db)
                 .expect("Thread query failed");
