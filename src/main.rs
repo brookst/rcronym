@@ -170,22 +170,15 @@ fn main() {
         }
         Cli::ExpandThread { thread_id } => {
             use schema::{occurances, acronyms};
-            use models::{Occurance, Acronym};
-            let uses = occurances::dsl::occurances
-                .filter(occurances::thread_id.eq(&thread_id))
-                .load::<Occurance>(&db)
-                .expect("Error loading occurances");
+            use models::Acronym;
             println!("Thread: https://www.reddit.com/r/rust/comments/{}", thread_id);
 
-            // for result in uses {
-            //     let acronym: Acronym = acronyms::dsl::acronyms
-            //         .find(result.acronym_id)
-            //         .first(&db)
-            //         .expect("Error loading acronym");
-            use diesel::BelongingToDsl;
-            let results = Acronym::belonging_to(&uses)
+            let results = occurances::table
+                .inner_join(acronyms::table)
+                .filter(occurances::thread_id.eq(thread_id))
+                .select(acronyms::all_columns)
                 .load::<Acronym>(&db)
-                .expect("Error loading acronyms");
+                .expect("Thread query failed");
             for acronym in results {
                 println!("  {}: {}", acronym.key, acronym.value);
             }

@@ -10,8 +10,7 @@ pub struct Occurance {
 
 use schema::acronyms;
 
-#[derive(Queryable, Identifiable, Associations)]
-#[belongs_to(Occurance)]
+#[derive(Queryable, Identifiable, Debug)]
 pub struct Acronym {
     pub id: i32,
     pub key: String,
