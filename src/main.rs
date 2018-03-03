@@ -17,10 +17,11 @@
 //! argument to customise the matching, and consumes the explanation on `stdin`.
 //!
 //! Acronyms in the database can be listed with the `list` command. The id number of each acronym
-//! can be used to remove it with `rm --id`.
+//! can be used to remove it with `rm --id`. The acronym can be edited with the `edit` command.
 //!
-//! The most recent comments in the `/r/rust` subreddit are fetched, and any matches with acronyms
-//! in the database are printed.
+//! The most recent comments in the `/r/rust` subreddit are fetched with the `recent` command, and
+//! any matches with acronyms in the database are printed. All acronyms seen in a thread can be
+//! recalled with the `expand` command.
 //!
 //! A blanket upper-case regex can be used to look for acronyms in use with the `candidates`
 //! command.
