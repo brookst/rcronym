@@ -92,12 +92,18 @@ fn main() {
 
     match matches {
         Cli::ListAcronyms => {
-            let acronyms = get_acronyms(&db);
+            let mut acronyms = get_acronyms(&db);
+            let digits = ((acronyms.len() as f32).log10().floor()) as usize + 1;
 
+            acronyms.sort_by_key(|acronym| acronym.key.clone());
             for acronym in acronyms {
                 println!(
-                    "[{}] {}: {} {}",
-                    acronym.id, acronym.key, acronym.value, acronym.regex
+                    "#{:0digits$} {}: {} {}",
+                    acronym.id,
+                    acronym.key,
+                    acronym.value,
+                    acronym.regex,
+                    digits = digits
                 );
             }
         }
@@ -192,8 +198,11 @@ fn main() {
                 .inner_join(acronyms::table)
                 .filter(occurrences::thread_id.eq(thread_id))
                 .select(acronyms::all_columns)
+                .order(acronyms::key.asc())
+                .distinct()
                 .load::<Acronym>(&db)
                 .expect("Thread query failed");
+            println!("{} acronyms used:", results.len());
             for acronym in results {
                 println!("  {}: {}", acronym.key, acronym.value);
             }
